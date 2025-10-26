@@ -1,0 +1,21 @@
+{
+  "name": "CSH Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "runArgs": ["--init"],
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-vscode.cpptools",
+    "ms-vscode.cmake-tools"
+  ],
+  "postCreateCommand": "echo 'Container ready. Build CSH in /workspace with ./configure && ./install'"
+}
