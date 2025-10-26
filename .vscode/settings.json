@@ -92,4 +92,5 @@
 	},
 	"C_Cpp.default.compileCommands": "/workspace/builddir/compile_commands.json",
 	"C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild",
+	"cmake.sourceDirectory": "/workspace/lib/csp/src",
 }
