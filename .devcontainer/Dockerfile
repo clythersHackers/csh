@@ -5,24 +5,29 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcurl4-openssl-dev \
-    git \
     build-essential \
-    libsocketcan-dev \
-    can-utils \
+    git \
+    gdb \
+    pkg-config
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnats-dev \
     libzmq3-dev \
+    libsocketcan-dev \
+    libcurl4-openssl-dev \
     libyaml-dev \
-    pkg-config \
+    libelf-dev \
+    libbsd-dev
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    can-utils \
     fonts-powerline \
     pipx \
-    libelf-dev \
-    libbsd-dev \
     python3-dev \
     python3-venv \
     ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y gdb
 
 # Add pipx binaries to PATH
 ENV PATH="/root/.local/bin:${PATH}"
