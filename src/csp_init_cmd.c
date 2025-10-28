@@ -14,6 +14,8 @@
 #include <csp/interfaces/csp_if_tun.h>
 #include <csp/interfaces/csp_if_udp.h>
 #include <csp/interfaces/csp_if_eth.h>
+#include <csp/interfaces/csp_if_nats.h>
+
 #include <csp/drivers/can_socketcan.h>
 #include <csp/drivers/eth_linux.h>
 #include <csp/drivers/usart.h>
@@ -594,6 +596,69 @@ static int csp_ifadd_tun_cmd(struct slash *slash) {
 }
 
 slash_command_subsub(csp, add, tun, csp_ifadd_tun_cmd, NULL, "Add a new TUN interface");
+
+
+static int csp_ifadd_nats_cmd(struct slash *slash) {
+
+    static int ifidx = 0;
+
+    char name[CSP_IFLIST_NAME_MAX+1] = {0};
+    snprintf(name, CSP_IFLIST_NAME_MAX, "NATS%u", ifidx);
+    
+    int dfl = 0;
+    unsigned int port = 4222;
+
+    optparse_t * parser = optparse_new("csp add nats", "<addr> <server>");
+    optparse_add_help(parser);
+    optparse_add_set(parser, 'd', "default", 1, &dfl, "Set as default");
+    optparse_add_unsigned(parser, 'p', "port", "NUM", 0, &port, "NATS port (default: 4222)");
+
+    int argi = optparse_parse(parser, slash->argc - 1, (const char **) slash->argv + 1);
+
+    if (argi < 0) {
+        optparse_del(parser);
+	    return SLASH_EINVAL;
+    }
+
+	if (++argi >= slash->argc) {
+		printf("missing parameter addr\n");
+        optparse_del(parser);
+		return SLASH_EINVAL;
+	}
+    char * endptr = NULL;
+    const unsigned int addr = strtoul(slash->argv[argi], &endptr, 10);
+
+    if (*endptr != '\0') {
+        fprintf(stderr, "Addr argument '%s' is not an integer\n", slash->argv[argi]);
+        optparse_del(parser);
+		return SLASH_EINVAL;
+    }
+
+	if (++argi >= slash->argc) {
+		printf("missing parameter server\n");
+        optparse_del(parser);
+		return SLASH_EINVAL;
+	}
+    char * server = slash->argv[argi];
+
+    csp_iface_t * iface;
+    int error = csp_nats_init((const char *) name, server, addr, &iface, port);
+
+    if (error != CSP_ERR_NONE) {
+        csp_print("Failed to add NATS interface [%s], error: %d\n", server, error);
+        optparse_del(parser);
+        return SLASH_EINVAL;
+    }
+    iface->is_default = dfl;
+    iface->addr = addr;
+
+    optparse_del(parser);
+    ifidx++;
+	return SLASH_SUCCESS;
+}
+
+slash_command_subsub(csp, add, nats, csp_ifadd_nats_cmd, NULL, "Add a new NATS interface");
+
 
 #if CSP_USE_RTABLE
 static int csp_routeadd_cmd(struct slash *slash) {
